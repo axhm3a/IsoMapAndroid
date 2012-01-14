@@ -29,6 +29,7 @@ public class IsoMap extends Activity {
     }
     
     class IsoPanel extends SurfaceView implements SurfaceHolder.Callback {
+    	public Bitmap bg = null;
     	public Bitmap[] tiles = new Bitmap[51] ;
     	public Map worldMap;
     	float offX = 0;
@@ -44,7 +45,7 @@ public class IsoMap extends Activity {
     		
     		worldMap = new Map(BitmapFactory.decodeResource(getResources(), R.drawable.heightmap2),BitmapFactory.decodeResource(getResources(), R.drawable.objmap));
     		    		//BitmapFactory.Options o = new BitmapFactory.Options();
-    		    		
+    		bg = BitmapFactory.decodeResource(getResources(), R.drawable.bg);
     		tiles[0] = BitmapFactory.decodeResource(getResources(), R.drawable.t010);
     		tiles[1] = BitmapFactory.decodeResource(getResources(), R.drawable.t012);
     		tiles[2] = BitmapFactory.decodeResource(getResources(), R.drawable.t011);
@@ -64,7 +65,7 @@ public class IsoMap extends Activity {
     	        int touchX = (int) (event.getX()/320*240);
     	        int touchY = (int) (event.getY()/440*320);
     	        
-    	        float c = 0.5f;
+    	        float c = 1.0f;
     	        
     	        if(touchX < 50){
     	        	offX = offX -c;
@@ -101,46 +102,61 @@ public class IsoMap extends Activity {
     	
     	@Override
     	public void onDraw(Canvas canvas) {
-    		canvas.drawColor(Color.BLACK);
+    		//canvas.drawColor(Color.BLACK);
+    		
+    		canvas.drawBitmap(bg,0,0,null);
+    		
     		float renX = 0; //1/2*offX + 1/2*offY;
     		float renY = 0;
     		
-    		float offScreenY = 0;
-    		float offScreenX = 0;
+    		// X = ($scale / 2 * ($offx + $offy))+ $off, 
+    		// Y = ($scale /4 * ($offx - $offy))+ $off -25,
+    		//
+    		float offScreenY =  ((offX - ((int)offX))*1 + (offY - ((int)offY)))*1 ;
+    		float offScreenX = ((offX - ((int)offX))*1 - (offY - ((int)offY)))*1 ;
+    		offScreenX *=-1;
+    		offScreenY *=-1;
+    		offScreenX /= 2;
+    		offScreenY /= 4;
+    		int amount = 0;
     		
     		int tOffX = (int)offX;
     		int tOffY = (int)offY;
     		
-    		for (int y = 0; y < 18; y++){
+    		for (int y = 0; y < 40; y++){
         		renX = (320 / 2) - 10;
-        		renY = 30;
+        		renY = -70;
         		renX = renX - (y * 10);
         		renY = renY + (y * 30 /3 /2);
     			
-    			for (int x = 0; x < 18; x++){
+    			for (int x = 0; x < 40; x++){
     				renX = renX + 20 / 2;
     				renY = renY + 30 / 3 / 2;
     				
-    				int i = 0;
-    				if(worldMap.getHeight(x + tOffX,y + tOffY) > worldMap.getHeight(x + tOffX, y  + tOffY -1) ){
-    					i = 2;}
-    				if(worldMap.getHeight(x + tOffX,y + tOffY) > worldMap.getHeight(x + tOffX -1, y + tOffY) ){
-    					i = 1;}
-    				if(worldMap.getHeight(x + tOffX,y + tOffY) > worldMap.getHeight(x + tOffX, y + (int)offY -1) &&worldMap.getHeight(x + tOffX,y + tOffY) > worldMap.getHeight(x + tOffX -1, y + tOffY)){
-    					i = 3;}
-    				if(worldMap.getHeight(x + tOffX, y + tOffY) == 0){
-    					i = 4;}
-    				canvas.drawBitmap(tiles[i], renX + offScreenX, renY + offScreenY - (worldMap.getHeight(x + tOffX, y + tOffY) * 2), null);
-    				
-    				if(worldMap.getObject(x + tOffX, y + tOffY) > 0 && worldMap.getHeight(x + tOffX, y + tOffY) > 0){
-    					//Log.d("SIZE", Integer.toString(worldMap.getObject(x + offX, y + offY)));
-    					canvas.drawBitmap(tiles[worldMap.getObject(x + tOffX, y + tOffY)], renX, renY - (worldMap.getHeight(x + tOffX, y + tOffY) * 2) -20, null);
-    					
-    				}
-    				
-    				if(x ==8 && y == 8)
+    				if (renX > -10 && renY > -5 && renX < 310 && renY < 235)
     				{
-    					canvas.drawBitmap(tiles[33], renX, renY - (worldMap.getHeight(x + tOffX, y + tOffY) * 2) -20, null);
+    					 	amount += 1;
+		    				int i = 0;
+		    				if(worldMap.getHeight(x + tOffX,y + tOffY) > worldMap.getHeight(x + tOffX, y  + tOffY -1) ){
+		    					i = 2;}
+		    				if(worldMap.getHeight(x + tOffX,y + tOffY) > worldMap.getHeight(x + tOffX -1, y + tOffY) ){
+		    					i = 1;}
+		    				if(worldMap.getHeight(x + tOffX,y + tOffY) > worldMap.getHeight(x + tOffX, y + (int)offY -1) &&worldMap.getHeight(x + tOffX,y + tOffY) > worldMap.getHeight(x + tOffX -1, y + tOffY)){
+		    					i = 3;}
+		    				if(worldMap.getHeight(x + tOffX, y + tOffY) == 0){
+		    					i = 4;}
+		    				canvas.drawBitmap(tiles[i], renX, renY - (worldMap.getHeight(x + tOffX, y + tOffY) * 2), null);
+		    				
+		    				if(worldMap.getObject(x + tOffX, y + tOffY) > 0 && worldMap.getHeight(x + tOffX, y + tOffY) > 0){
+		    					//Log.d("SIZE", Integer.toString(worldMap.getObject(x + offX, y + offY)));
+		    					canvas.drawBitmap(tiles[worldMap.getObject(x + tOffX, y + tOffY)], renX, renY - (worldMap.getHeight(x + tOffX, y + tOffY) * 2) -20, null);
+		    					
+		    				}
+		    				
+		    				if(x ==8 && y == 8)
+		    				{
+		    					canvas.drawBitmap(tiles[33], renX + offScreenX, renY + offScreenY - (worldMap.getHeight(x + tOffX, y + tOffY) * 2) -20, null);
+		    				}
     				}
     			}
     		}
@@ -157,6 +173,9 @@ public class IsoMap extends Activity {
     		
     		int fps =  (int)(1000/(System.currentTimeMillis() - lastTickMs)); 
     		canvas.drawText(Integer.toString(fps) + " fps", 280, 200, p);
+    		canvas.drawText("x " + Float.toString(offX), 280, 180, p);
+    		canvas.drawText("y " + Float.toString(offY), 280, 160, p);
+    		canvas.drawText("tiles: " + Integer.toString(amount), 280, 140, p);
     		//canvas.drawText((offX + " " + offY), 150, 100, p);
     		lastTickMs = System.currentTimeMillis(); 
     	}
