@@ -14,7 +14,7 @@
         </activity>
 
     </application>
-	<support-screens android:anyDensity="true" />
+	<support-screens android:anyDensity="false" />
 
 <uses-sdk></uses-sdk>
 </manifest> 
